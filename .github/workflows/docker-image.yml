@@ -1,0 +1,42 @@
+name: Docker Full Stack SDP
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./free_backend
+          file: ./free_backend/backend.Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/free-backend:latest
+          platforms: linux/arm64, linux/amd64
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./project-frontend/project
+          file: ./project-frontend/project/frontend.Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/free-frontend:latest
+          platforms: linux/arm64, linux/amd64
